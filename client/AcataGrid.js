@@ -1,16 +1,11 @@
-Session.set("current_user", null);
 Session.set("selected_cell", null);
 
 Sky.subscribe('cells');
-Sky.subscribe('users');
 
 /***** The grid *****/
 
 var select_cell = function (id) {
   Session.set("selected_cell", id);
-  var current_user = Session.get("current_user");
-  if (current_user)
-    Users.update(current_user, {$set: {selected_cell: id}});
 };
 
 Template.grid.rows = function () {
@@ -49,11 +44,6 @@ Template.cell.text = function () {
   if (this.contents === true || this.contents === false)
     return "";
   return this.contents || '';
-};
-
-Template.cell.user_count = function () {
-  var users_on_cell = Users.find({selected_cell: this._id});
-  return users_on_cell.length || '';
 };
 
 Template.cell.events = {
@@ -109,42 +99,3 @@ Template.main.events = {
 Sky.startup(function () {
   $("#main").focus();
 });
-
-/***** Users *****/
-
-Template.user_list.users = function () {
-  return Users.find();
-};
-
-Template.user.current = function () {
-  return Session.equals("current_user", this._id) ? "current" : "";
-};
-
-Template.user.events = {
-  'click': function () {
-    var old_user = Session.get("current_user");
-    if (old_user)
-      Users.update(old_user, {$set: {selected_cell: null}});
-    Session.set("current_user", this._id);
-    Users.update(this._id,
-                 {$set: {selected_cell: Session.get("selected_cell")}});
-  }
-};
-
-/*
-  Set attributes on body tag (eg tabindex)
-  Add helpers and events to body via Template.body
-  Easier way to set up keymaps out of the box
-  Assign a database query directly to a helper (no lambda)
-
-  Generic Sky.deps rerun block - eg, to write selected_cell into our
-   user record
-
-  When you accidentally replace rather than $-modify a document with update,
-   it can lead to hella confusing bugs
-
-
-  Exception can stop writes from happening to the server? (in deps update?)
-
-  Weird template exceptions when you return null/undefined is hugely irritating
-*/

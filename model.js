@@ -6,16 +6,8 @@
 //  - comment: string
 Cells = Sky.Collection("cells");
 
-// Properties of a user:
-//  - name
-//  - color (string - 6 hex digits)
-//  - selected_cell (current cursor position)
-Users = Sky.Collection("users");
-
 if (Sky.is_server) {
   Sky.publish('cells', {});
-
-  Sky.publish('users', {});
 
   Sky.startup(function () {
     if (!Cells.find().length) {

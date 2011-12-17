@@ -9,7 +9,6 @@
 <template name="main">
   <div id="main" tabindex=-1>
     {{> grid }}
-    {{> user_list }}
   </div>
 </template>
 
@@ -26,22 +25,9 @@
 <template name="cell">
  {{#if this}}
     <div id="{{_id}}" class="cell {{type}} {{selected}}" {{style}}>
-      <div class="badge"><div>{{user_count}}</div></div>
       {{text}}
     </div>
   {{else}}
      <div class="cell character">?</div>
    {{/if}}
-</template>
-
-<template name="user_list">
-  <div class="user_list">
-    {{#each users}}
-      {{> user }}
-    {{/each}}
-  </div>
-</template>
-
-<template name="user">
-  <span class="user {{current}}">{{name}}</span>
 </template>
