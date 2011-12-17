@@ -1,0 +1,47 @@
+<head>
+  <title>AcataGrid</title>
+</head>
+
+<body>
+  {{> main }}
+</body>
+
+<template name="main">
+  <div id="main" tabindex=-1>
+    {{> grid }}
+    {{> user_list }}
+  </div>
+</template>
+
+<template name="grid">
+  <div class="grid">
+    <h1>BEHOLD THE GRID</h1>
+
+    {{#each rows}}
+      <div class="row">{{#each this}}{{> cell }}{{/each}}</div>
+    {{/each}}
+  </div>
+</template>
+
+<template name="cell">
+ {{#if this}}
+    <div id="{{_id}}" class="cell {{type}} {{selected}}" {{style}}>
+      <div class="badge"><div>{{user_count}}</div></div>
+      {{text}}
+    </div>
+  {{else}}
+     <div class="cell character">?</div>
+   {{/if}}
+</template>
+
+<template name="user_list">
+  <div class="user_list">
+    {{#each users}}
+      {{> user }}
+    {{/each}}
+  </div>
+</template>
+
+<template name="user">
+  <span class="user {{current}}">{{name}}</span>
+</template>
