@@ -1,10 +1,15 @@
+// XXX change how we handle selected_cell -- consider it to be
+// authoritative, rather than the value in our user record, so we
+// don't see ghosting as we move our cursor around. (would love to fix
+// this in the framework)
+
 Session.set("current_user", null);
 Session.set("selected_cell", null);
 
 Sky.subscribe('cells');
 Sky.subscribe('users');
 
-/***** The grid *****/
+/***** Methods *****/
 
 var select_cell = function (id) {
   Session.set("selected_cell", id);
@@ -13,6 +18,24 @@ var select_cell = function (id) {
     Users.update(current_user, {$set: {selected_cell: id}});
 };
 
+var log_in_user = function (id) {
+  var old_user = Session.get("current_user");
+  if (old_user)
+    Users.update(old_user, {$set: {selected_cell: null}});
+  Session.set("selected_cell", null);
+  Session.set("current_user", id);
+};
+
+var log_out = function () {
+  Session.set("current_user", null);
+};
+
+/***** The grid *****/
+
+// XXX it'd be better to have the helper functions just emit lists of
+// integers, and then invoke the partial with the x,y
+// coordinates. that way the outer grid would depend only on the
+// dimensions of the grid, and the grid could also be sparse.
 Template.grid.rows = function () {
   var ret = [];
   for (var y = 0; y < 10; y++) {
@@ -33,7 +56,16 @@ Template.cell.selected = function () {
   return Session.equals("selected_cell", this._id) ? "selected" : "";
 };
 
+// It'd be better to render a colored frame around the cell:
+// - could render multiple (of different sizes) for multiple users
+// - you can still see the color of the cell underneath
 Template.cell.style = function () {
+  // XXX sort by recency of movement
+  var user = Users.find({selected_cell: this._id})[0];
+  if (user) {
+    var color = user.color && ("#" + user.color) || 'blue';
+    return 'style="background-color: ' + color + ';"';
+  }
   return '';
 };
 
@@ -49,11 +81,6 @@ Template.cell.text = function () {
   if (this.contents === true || this.contents === false)
     return "";
   return this.contents || '';
-};
-
-Template.cell.user_count = function () {
-  var users_on_cell = Users.find({selected_cell: this._id});
-  return users_on_cell.length || '';
 };
 
 Template.cell.events = {
@@ -112,39 +139,74 @@ Sky.startup(function () {
 
 /***** Users *****/
 
-Template.user_list.users = function () {
+Template.login_bar.current_user = function () {
+  return Users.find(Session.get("current_user"));
+};
+
+Template.login_bar.users = function () {
   return Users.find();
 };
 
-Template.user.current = function () {
-  return Session.equals("current_user", this._id) ? "current" : "";
+Template.login_bar.logged_in = function () {
+  return !Session.equals("current_user", null);
+};
+
+Template.login_bar.events = {
+  'click .edit_user': function () {
+    Session.set("edit_user_mode", true);
+  },
+  'click .log_out': function () {
+    log_out();
+  },
+  'click .create_user': function () {
+    Session.set("create_user_mode", true);
+  }
 };
 
 Template.user.events = {
   'click': function () {
-    var old_user = Session.get("current_user");
-    if (old_user)
-      Users.update(old_user, {$set: {selected_cell: null}});
-    Session.set("current_user", this._id);
-    Users.update(this._id,
-                 {$set: {selected_cell: Session.get("selected_cell")}});
+    log_in_user(this._id);
   }
 };
 
-/*
-  Set attributes on body tag (eg tabindex)
-  Add helpers and events to body via Template.body
-  Easier way to set up keymaps out of the box
-  Assign a database query directly to a helper (no lambda)
 
-  Generic Sky.deps rerun block - eg, to write selected_cell into our
-   user record
+/***** Edit my detail *****/
 
-  When you accidentally replace rather than $-modify a document with update,
-   it can lead to hella confusing bugs
+Session.set("edit_user_mode", false);
+Template.edit_user.active = function () {
+  return Session.get("edit_user_mode");
+};
 
+Template.edit_user.user = function () {
+  return Users.find(Session.get("current_user"));
+};
 
-  Exception can stop writes from happening to the server? (in deps update?)
+Template.edit_user.events = {
+  'click .close': function () {
+    var current_user = Session.get("current_user");
+    if (current_user)
+      // XXX super lame way of finding the <input>
+      Users.update(current_user, {$set: {color: $("#edit_user_color").val()}});
+    Session.set("edit_user_mode", false);
+  }
+};
 
-  Weird template exceptions when you return null/undefined is hugely irritating
-*/
+/***** Create user *****/
+
+Session.set("create_user_mode", false);
+
+Template.create_user.active = function () {
+  return Session.get("create_user_mode");
+};
+
+Template.create_user.events = {
+  'click .cancel': function () {
+    Session.set("create_user_mode", false);
+  },
+  'click .save': function () {
+    // XXX validation
+    var u = Users.insert({name: $("#new_user_name").val()});
+    log_in_user(u._id);
+    Session.set("create_user_mode", false);
+  }
+};

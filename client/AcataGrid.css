@@ -19,6 +19,47 @@ h1 {
     border-width: 4px;
 }
 
+.action {
+    text-decoration: underline;
+}
+
+.action:hover {
+    color: white;
+    background-color: blue;
+}
+
+.mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: black;
+    opacity: .4;
+}
+
+.popup-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+.popup {
+    position: relative;
+    width: 600px;
+    margin-left: -300px;
+    height: 400px;
+    margin-top: -200px;
+    padding: 20px;
+
+    background-color: white;
+    border: 2px solid black;
+}
+
+.popup h1 {
+    border-style: none none solid none;
+}
+
 /***** Grid *****/
 
 .row {
@@ -73,3 +114,4 @@ h1 {
     background-color: blue;
     font-weight: bold;
 }
+

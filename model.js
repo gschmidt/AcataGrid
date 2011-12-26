@@ -12,6 +12,9 @@ Cells = Sky.Collection("cells");
 //  - selected_cell (current cursor position)
 Users = Sky.Collection("users");
 
+// XXX separate selected_cell out into a separate session object, so
+// users can have multiple cursor positions?
+
 if (Sky.is_server) {
   Sky.publish('cells', {});
 

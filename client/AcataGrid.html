@@ -4,12 +4,15 @@
 
 <body>
   {{> main }}
+
+  {{> edit_user }}
+  {{> create_user }}
 </body>
 
 <template name="main">
   <div id="main" tabindex=-1>
     {{> grid }}
-    {{> user_list }}
+    {{> login_bar }}
   </div>
 </template>
 
@@ -25,8 +28,7 @@
 
 <template name="cell">
  {{#if this}}
-    <div id="{{_id}}" class="cell {{type}} {{selected}}" {{style}}>
-      <div class="badge"><div>{{user_count}}</div></div>
+    <div id="{{_id}}" class="cell {{type}} {{selected}}" {{{style}}}>
       {{text}}
     </div>
   {{else}}
@@ -34,14 +36,58 @@
    {{/if}}
 </template>
 
-<template name="user_list">
-  <div class="user_list">
-    {{#each users}}
-      {{> user }}
-    {{/each}}
+<template name="login_bar">
+  <div>
+    {{#if logged_in}}
+      {{#with current_user}}
+        <b>{{name}}</b>
+      {{/with}}
+      <span class="edit_user action">Edit my information</span>
+      <span class="log_out action">Log out</span>
+    {{else}}
+      <div class="user_list">
+        Log in as: 
+        {{#each users}}
+          {{> user }}
+        {{/each}}
+        or <span class="create_user action">Create new</span>
+      </div>
+    {{/if}}
   </div>
 </template>
 
 <template name="user">
-  <span class="user {{current}}">{{name}}</span>
+  <span class="user action">{{name}}</span>
 </template>
+
+<template name="edit_user">
+  {{#if active}}
+    <div class="mask"></div>
+    <div class="popup-wrapper">
+      <div class="popup">
+        {{#with user}}
+          <h1>{{name}}</h1>
+          Color (hex): <input id="edit_user_color" value="{{color}}">
+        {{/with}}
+        <p class="close action">Done</p>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
+<template name="create_user">
+  {{#if active}}
+    <div class="mask"></div>
+    <div class="popup-wrapper">
+      <div class="popup">
+        <h1>New user</h1>
+          Name: <input id="new_user_name">
+        <p>
+          <span class="cancel action">Cancel</span>
+          <span class="save action">Create</span>
+        </p>
+      </div>
+    </div>
+  {{/if}}
+</template>
+
