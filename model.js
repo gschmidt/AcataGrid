@@ -4,24 +4,25 @@
 //  - contents:
 //      true for black, false for white, or a string (one character)
 //  - comment: string
-Cells = Sky.Collection("cells");
+Cells = Meteor.Collection("cells");
 
 // Properties of a user:
 //  - name
 //  - color (string - 6 hex digits)
 //  - selected_cell (current cursor position)
-Users = Sky.Collection("users");
+Users = Meteor.Collection("users");
 
 // XXX separate selected_cell out into a separate session object, so
 // users can have multiple cursor positions?
 
-if (Sky.is_server) {
-  Sky.publish('cells', {});
+if (Meteor.is_server) {
+  Meteor.publish('cells', {});
 
-  Sky.publish('users', {});
+  Meteor.publish('users', {});
 
-  Sky.startup(function () {
-    if (!Cells.find().length) {
+  Meteor.startup(function () {
+    if (!Cells.find().count()) {
+      console.log("creating data");
       for (var y = 0; y < 10; y++)
         for (var x = 0; x < 10; x++)
           Cells.insert({x: x, y: y, contents: !!((x + y) % 2),

@@ -6,8 +6,8 @@
 Session.set("current_user", null);
 Session.set("selected_cell", null);
 
-Sky.subscribe('cells');
-Sky.subscribe('users');
+Meteor.subscribe('cells');
+Meteor.subscribe('users');
 
 /***** Methods *****/
 
@@ -45,7 +45,7 @@ Template.grid.rows = function () {
     ret.push(row);
   }
 
-  _.each(Cells.find(), function (cell) {
+  Cells.find().forEach(function (cell) {
     ret[cell.y][cell.x] = cell;
   });
 
@@ -61,7 +61,7 @@ Template.cell.selected = function () {
 // - you can still see the color of the cell underneath
 Template.cell.style = function () {
   // XXX sort by recency of movement
-  var user = Users.find({selected_cell: this._id})[0];
+  var user = Users.findOne({selected_cell: this._id});
   if (user) {
     var color = user.color && ("#" + user.color) || 'blue';
     return 'style="background-color: ' + color + ';"';
@@ -100,12 +100,11 @@ Template.main.events = {
       if (event.which == 40) delta = [0, 1];
 
       if (delta) {
-        var cell = Cells.find(selected_cell);
-        var new_cell = Cells.find({
+        var cell = Cells.findOne(selected_cell);
+        var new_cell = Cells.findOne({
           x: cell.x + delta[0],
           y: cell.y + delta[1]
         });
-        new_cell = new_cell.length ? new_cell[0] : null;
         if (new_cell)
           select_cell(new_cell._id);
         event.preventDefault();
@@ -133,14 +132,14 @@ Template.main.events = {
   }
 };
 
-Sky.startup(function () {
+Meteor.startup(function () {
   $("#main").focus();
 });
 
 /***** Users *****/
 
 Template.login_bar.current_user = function () {
-  return Users.find(Session.get("current_user"));
+  return Users.findOne(Session.get("current_user"));
 };
 
 Template.login_bar.users = function () {
@@ -178,7 +177,7 @@ Template.edit_user.active = function () {
 };
 
 Template.edit_user.user = function () {
-  return Users.find(Session.get("current_user"));
+  return Users.findOne(Session.get("current_user"));
 };
 
 Template.edit_user.events = {
